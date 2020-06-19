@@ -1,2 +1,2 @@
-# PROGRAMACI-N-CON-RESTRICCIONES
+# PROGRAMACION-CON-RESTRICCIONES
 Repositorio con las practicas de la asignatura programacion con restricciones
