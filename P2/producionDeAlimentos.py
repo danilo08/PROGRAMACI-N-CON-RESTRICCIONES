@@ -2,6 +2,9 @@
 import sys
 #import numpy as np
 import numpy
+#La lectura de datos de datos se hace copiando los datos directamente en la consola pues tenia problemas con la
+#consola de python y he tenido que ejecutar el codigo desde Visual Studio Code
+#Los datos son el archivo datos.txt
 
 #############################################################################
 #   LECTURA DE DATOS:
@@ -16,7 +19,7 @@ for i in range(12):
     datos=input().split()
     for j in range(aceites):
         tablauuno[i,j]=(int(datos[j]))
-
+#convertin en int la Tabla de precios ya que con numpy los crea como double
 tabla=tablauuno.astype(int)
 #MiAlmacen inicial
 almacenIni=[]
@@ -151,16 +154,16 @@ def getmodel():
 def getvalue(l):
     print("(get-value " + l + " )")
 
-################################
+#############################################################################
 # generamos un fichero smtlib2
-################################
+#############################################################################
 
 
 print("(set-option :produce-models true)")
 print(setlogic("QF_LIA"))
 
-#DECLARACION DE VARIABLES:
 
+#DECLARACION DE VARIABLES:
     
 #Declaracion de COMPRAS
 for i in range(12):
@@ -182,11 +185,12 @@ for i in range(12):
 for j in range(aceites):
     print(intvar(miAlmAux(j)))
 
-#ASSERTS://////////////////////////////////////////////////////////////////
 
- #ASIGNAMOS LOS VALORES CORRESPONDIENTES:
+#############################################################################
+#ASSERTS:
+#############################################################################
 
-
+#ASIGNAMOS LOS VALORES CORRESPONDIENTES:
 #Asignamos el primer mes:
 for j in range(aceites):
     print(addassert(addeq(miAlmAux(j),str(almacenIni[j]))))
