@@ -1,0 +1,10 @@
+D = 15;
+N = 2;
+T = 12;
+MaxDt = 4;
+MaxDl= 3;
+MinDt = 4;
+supervisores = [ true, true, false,false,false,true,false,false,true,false,true,false];
+NIncom=3;
+incompatibles =[|1,2| 4,7|3,6|];
+%6sec

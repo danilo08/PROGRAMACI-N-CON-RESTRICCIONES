@@ -36,18 +36,17 @@ array[1..12,1..aceites]of var 0..Mcap:miAlmacen;
 %Nos dice cuanto comprar de cada aceita cada mes
 array[1..12, 1..aceites]of var 0..Mcap: compras;
 %Que cantidades de cada aceite REFINAR cada mes.
-array[1..12,1..aceites]of var 0..1000:refinado;
+array[1..12,1..aceites]of var 0..250:refinado;
 %Dinero
-array[1..12]of var int:dinero;
+array[1..12]of var 0..10000000:dinero;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%Constraint asserts:
-
 %                    FUNCIONES:
-%Pienso que este problema esta muy enfocado ha facilitarse por el uso de funciones, aunque al final solo he utilizado funciones para facilitar el calculo del dinero
+%Pienso que este problema esta muy enfocado ha facilitarse por el uso de funciones, aunque al final solo he utilizado funciones para facilitar el calculo del dinero y la media de la dureza
 %Funciones auxiliares para calcular el dinero
 function var int:DineroGastado(var int:mes)= (sum(j in 1..aceites) ((miAlmacen[mes,j]*CA) + (compras[mes,j]*tabla[mes,j]) ));
-function var int:DineroGanado(var int:mes)=(sum(j in 1..aceites) (refinado[mes,j]*Valor) );
+function var int:DineroGanado(var int:mes)=(sum(j in 1..aceites) (refinado[mes,j]*Valor));
+function var float:sumDurezasrefMedia(var int:mes)=(sum(j in 1..aceites) (refinado[mes,j]*durezas[j])/sum(x in 1..aceites) (refinado[mes,x]));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                  CONSTRAINTS:
 
@@ -58,18 +57,19 @@ constraint forall(j in 1..aceites) (miAlmacen[1,j]=almacenInicial[j]+compras[1,j
 %Mi almacen es igual a mi almacen del mes anterior mas las compras menos lo refinado:
 constraint forall(i in 2..12) ( forall(j in 1..aceites) (miAlmacen[i,j]=miAlmacen[i-1,j]+compras[i,j]-refinado[i,j]));
 
-
+%En el tema del refinado pienso que hay algun problema que no he podido resolver o que existen tantas posiblidadades que tarda muchisimo tiempo , por lo que se me han ocurrido dos soluciones distintas :
+%1 La primera solucion que se me ocurrio era obligar a que se refinase el maximo posible todos los meses
+%2 La segunda solucion seria obligar a que refinase un minimo todos los meses y maximizar el refniado 
+constraint forall(i in 1..12) (forall(j in 1..aceites) (refinado[i,j]>50));
 %Cada mes podemos refinar MAXv Maxnv como maximo:
-constraint forall(i in 1..12) ( sum(j in 1..vegetales) (refinado[i,j])=MaxV);
-
-constraint forall(i in 1..12) ( sum(j in vegetales+1..aceites) (refinado[i,j])=MaxN);
-
-
-
+constraint forall(i in 1..12) ( sum(j in 1..vegetales) (refinado[i,j])<=MaxV);
+constraint forall(i in 1..12) ( sum(j in vegetales+1..aceites) (refinado[i,j])<=MaxN);
 %No se puede refinar mas de lo almacenado:
 constraint forall(i in 1..12) ( forall(j in 1..aceites) (refinado[i,j]<= miAlmacen[i,j]));
 %no se puede refinar negativamente:
 constraint forall(i in 1..12) (forall(j in 1..aceites) (refinado[i,j]>=0));
+
+
 %no se puede comprar negativamente:
 constraint forall(i in 1..12) (forall(j in 1..aceites) (compras[i,j]>=0));
 %no se puede tener negativo en mi almacen:
@@ -80,33 +80,35 @@ constraint forall(i in 1..12) (forall(j in 1..aceites) (miAlmacen[i,j]>=0));
 %Lo que se refina es lo que se vende en el mes
 %LA media del refinado cumple                          
 %la cantidad por la dureza/la cantidad por la dureza de todos
-constraint forall(i in 1..12) (sum(j in 1..aceites) (refinado[i,j]*durezas[j]) / sum(x in 1..aceites)(refinado[i,x])> MinD /\ sum(j in 1..aceites) (refinado[i,j]*durezas[j]) / sum(x in 1..aceites)(refinado[i,x])< MaxD);
-
+%constraint forall(i in 1..12) (sum(j in 1..aceites) (refinado[i,j]*durezas[j]) / sum(x in 1..aceites)(refinado[i,x])> MinD /\ sum(j in 1..aceites) (refinado[i,j]*durezas[j]) / sum(x in 1..aceites)(refinado[i,x])< MaxD);
+constraint forall(i in 1..12) (sumDurezasrefMedia(i)>MinD /\ sumDurezasrefMedia(i)<MaxD);
 %Para el primer mes
 constraint dinero[1] = DineroGanado(1)-DineroGastado(1);
-%No dinero negativo primer mes
-
-%El dinero de cada mes es igual a la suma del dinero del ems anterior mas lo que he ganado menos lo que me he gastado.
+%El dinero de cada mes es igual a la suma del dinero del mes anterior mas lo que he ganado menos lo que me he gastado.
 constraint forall(i in 2..12) ( dinero[i] = dinero[i-1] + DineroGanado(i)-DineroGastado(i));
 %El beneficio final debe ser al menos MinB
 constraint dinero[12]>MinB;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-solve satisfy;
-
+%solve satisfy;
+%solve maximize sum(i in 1..12)(dinero[i]);
+%solve maximize dinero[12];
+solve maximize sum(i in 1..12,j in 1..aceites)(refinado[i,j]);
 
 output ["\n"];
 output ["Compras\n"];
 output[ if j=1 then "Mes\(i)  " else" " endif  ++ if i<10/\j=1 then " " else "" endif ++ " \(compras[i,j])  " ++ "   " ++  if j == aceites then "\n" else "" endif |i in 1..12,j in 1..aceites];
 
 output ["\n"];
+output ["Refinado\n"];
+output[ if j=1 then "Mes\(i)  " else" " endif  ++ if i<10/\j=1 then " " else "" endif ++ " \(refinado[i,j])  " ++ "   " ++  if j == aceites then "\n" else "" endif |i in 1..12,j in 1..aceites];
+
+
+output ["\n"];
 output ["Mi Almacen\n"];
 output[ if j=1 then "Mes\(i)  " else" " endif  ++ if i<10/\j=1 then " " else "" endif ++ " \(miAlmacen[i,j])  " ++ "   " ++  if j == aceites then "\n" else "" endif |i in 1..12,j in 1..aceites];
 
-output ["\n"];
-output ["Refinado\n"];
-output[ if j=1 then "Mes\(i)  " else" " endif  ++ if i<10/\j=1 then " " else "" endif ++ " \(refinado[i,j])  " ++ "   " ++  if j == aceites then "\n" else "" endif |i in 1..12,j in 1..aceites];
 
 output ["\n"];
 output[ if i=1 then "Mes\(i)  " else" " endif  ++ if i<10 then " " else "" endif ++ " \(dinero[i])  " ++ "   "  |i in 1..12,];

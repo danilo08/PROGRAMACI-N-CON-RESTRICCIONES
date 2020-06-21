@@ -160,7 +160,7 @@ print("(set-option :produce-models true)")
 print(setlogic("QF_LIA"))
 
 #DECLARACION DE VARIABLES:
-#Declaracion de la TABLA de precios:
+
     
 #Declaracion de COMPRAS
 for i in range(12):

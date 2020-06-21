@@ -1,0 +1,10 @@
+D = 5;
+N = 2;
+T = 7;
+MaxDt = 2;
+MaxDl= 1;
+MinDt = 3;
+supervisores = [true,false,false,true,true,false,true];
+NIncom=1;
+incompatibles =[|3,6|];
+%UNSATISFIABLE 900msec

@@ -1,0 +1,2 @@
+Todos los constraints realizados y explicados en el propio codigo.
+En los propios casos de prueba se indica lo que se ha tardado en encontrar solucion.
